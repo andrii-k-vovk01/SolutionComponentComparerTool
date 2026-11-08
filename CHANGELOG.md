@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.2026.11.1 - 2026-11-07
+## 1.2026.11.1 - 2026-11-08
 
 Initial version.
 
@@ -18,3 +18,6 @@ Initial version.
 - Added a console test runner for the comparison engine, report writers and repository paging.
 - Added the Release build script (build.cmd).
 - Added the user guide, screenshots and a demo animation.
+- Added cancellation of a running comparison.
+- Added GitHub and Help links in the XrmToolBox tool menu.
+- Added NuGet packaging for the XrmToolBox Tool Library (pack.cmd), the MIT license and the security policy.

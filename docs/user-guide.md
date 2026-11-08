@@ -29,7 +29,7 @@ To build the DLL from source, see [Build](../README.md#build).
 1. Connect to an environment.
 2. Open the **Tools** tab, search for **Solution Component Comparer** and open it.
 
-The solutions of the environment load automatically on the left. **Load solutions** on the toolbar reloads them.
+The solutions of the environment load automatically on the left. **Load solutions** on the toolbar reloads them. If no environment is connected yet, **Load solutions** opens the XrmToolBox connection dialog first.
 
 The tool only reads data. A note on the right side of the toolbar confirms this.
 

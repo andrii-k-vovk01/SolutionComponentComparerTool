@@ -1,5 +1,7 @@
 # Solution Component Comparer for XrmToolBox
 
+[![Build](https://github.com/andrii-k-vovk01/SolutionComponentComparerTool/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/andrii-k-vovk01/SolutionComponentComparerTool/actions/workflows/build.yml)
+
 An [XrmToolBox](https://www.xrmtoolbox.com) tool that compares the components of Dataverse / Dynamics 365 solutions.
 
 Pick a set of **source** solutions and a set of **target** solutions. The tool lists every component they contain and shows, for each one, whether the targets cover it. It also finds components that sit in more than one solution and shows every solution a component belongs to.
@@ -87,6 +89,8 @@ Selecting only source solutions and no target gives a plain component list of th
 
 - [User guide](docs/user-guide.md): picking solutions, reading the results, filters, Where used, duplicates, export, troubleshooting.
 - [Changelog](CHANGELOG.md)
+- [Security](SECURITY.md): how the tool handles data and how to report a vulnerability.
+- [Releasing](docs/releasing.md): maintainer checklist for publishing a new version.
 
 ## Project structure
 
@@ -115,3 +119,7 @@ Exit code 0 means all tests passed.
 - Compare solutions across two environments.
 - Show the XML difference of a component between solutions.
 - Publish to the XrmToolBox Tool Library.
+
+## License
+
+[MIT](LICENSE) © Andrii K

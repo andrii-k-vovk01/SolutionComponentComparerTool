@@ -1,0 +1,28 @@
+name: Build
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Build
+        run: dotnet build src/SolutionComponentComparer/SolutionComponentComparer.csproj -c Release
+
+      - name: Test
+        run: dotnet run --project tests/SolutionComponentComparer.Tests.csproj -c Release
