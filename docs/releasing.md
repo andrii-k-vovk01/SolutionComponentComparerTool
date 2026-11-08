@@ -42,7 +42,9 @@ On GitHub: **Releases > Draft a new release**, pick the tag, paste the CHANGELOG
 .\pack.cmd
 ```
 
-The package is written to `artifacts\`. It must contain only `lib\net48\Plugins\SolutionComponentComparer.dll` and `images\icon.png` (open the `.nupkg` as a zip file to check).
+The package is written to `artifacts\`. It must contain only `lib\net48\Plugins\SolutionComponentComparer.dll` (open the `.nupkg` as a zip file to check).
+
+The icon is referenced through `<iconUrl>` only. Do not add an embedded `<icon>`: nuget.org would then expose its own icon address, which the XrmToolBox portal rejects with "Logo Url is not valid". The resulting NU5048 warning ("iconUrl is deprecated") is expected.
 
 Publish it:
 
