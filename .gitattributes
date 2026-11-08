@@ -1,0 +1,12 @@
+# Normalize line endings in the repo; Windows files stay CRLF on checkout.
+* text=auto
+
+*.cs      text diff=csharp
+*.csproj  text
+*.sln     text eol=crlf
+*.cmd     text eol=crlf
+*.md      text
+
+*.dll     binary
+*.png     binary
+*.xlsx    binary

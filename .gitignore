@@ -1,0 +1,43 @@
+# Build output
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa]rtifacts/
+dist/
+*.nupkg
+*.snupkg
+packages/
+
+# Visual Studio / Rider / VS Code
+.vs/
+.idea/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.userprefs
+*.DotSettings.user
+launchSettings.json
+
+# Test results
+TestResults/
+[Tt]est[Rr]esult*/
+*.trx
+*.coverage
+coverage*.xml
+
+# Exported reports, logs, temp files
+SolutionComparison_*.xlsx
+SolutionComparison_*.html
+*.log
+*.tmp
+*.bak
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
