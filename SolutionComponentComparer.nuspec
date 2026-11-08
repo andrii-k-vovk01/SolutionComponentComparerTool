@@ -3,18 +3,19 @@
   <metadata>
     <id>AndriiK.XrmToolBox.SolutionComponentComparer</id>
     <!-- Must match AssemblyVersion in src/SolutionComponentComparer/Properties/AssemblyInfo.cs -->
-    <version>1.2026.11.1</version>
+    <version>1.2026.11.2</version>
     <title>Solution Component Comparer</title>
     <authors>Andrii K</authors>
     <license type="expression">MIT</license>
     <projectUrl>https://github.com/andrii-k-vovk01/SolutionComponentComparerTool</projectUrl>
     <repository type="git" url="https://github.com/andrii-k-vovk01/SolutionComponentComparerTool.git" />
-    <icon>images\icon.png</icon>
+    <!-- Icon URL only, no embedded <icon>: with an embedded icon nuget.org exposes its own
+         extension-less icon address, which the XrmToolBox portal rejects ("Logo Url is not valid"). -->
     <iconUrl>https://raw.githubusercontent.com/andrii-k-vovk01/SolutionComponentComparerTool/main/docs/images/icon.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <summary>Compare the components of Dataverse solutions: find missing components, duplicates and where each component is used. Read-only.</summary>
     <description>XrmToolBox tool that compares the components of a set of source solutions against a set of target solutions in a Dataverse / Dynamics 365 environment. It shows which components are missing in the targets, which are covered, which sit in more than one solution, and every solution a component belongs to. Results export to Excel or HTML. The tool is read-only.</description>
-    <releaseNotes>Initial version: source/target comparison by component, "Also in other solutions" check, root component behavior handling, Duplicates view, Where used, filters, Excel and HTML export. Full notes: https://github.com/andrii-k-vovk01/SolutionComponentComparerTool/blob/main/CHANGELOG.md</releaseNotes>
+    <releaseNotes>Fixed the package icon for the XrmToolBox Tool Library. Full notes: https://github.com/andrii-k-vovk01/SolutionComponentComparerTool/blob/main/CHANGELOG.md</releaseNotes>
     <copyright>Copyright (c) 2026 Andrii K</copyright>
     <tags>XrmToolBox Dataverse Dynamics365 PowerPlatform Solutions SolutionComponents Compare Duplicates</tags>
     <dependencies>
@@ -23,6 +24,5 @@
   </metadata>
   <files>
     <file src="src\SolutionComponentComparer\bin\Release\SolutionComponentComparer.dll" target="lib\net48\Plugins" />
-    <file src="docs\images\icon.png" target="images\" />
   </files>
 </package>

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2026.11.2 - 2026-11-08
+
+### Fixed
+
+- Fixed the NuGet package icon so that the XrmToolBox Tool Library accepts it: the package now uses an icon URL only, without an embedded icon.
+
 ## 1.2026.11.1 - 2026-11-08
 
 Initial version.
