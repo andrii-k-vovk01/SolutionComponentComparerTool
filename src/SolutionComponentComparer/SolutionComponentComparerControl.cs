@@ -14,6 +14,7 @@ using SolutionComponentComparer.Core;
 using SolutionComponentComparer.Data;
 using SolutionComponentComparer.UI;
 using XrmToolBox.Extensibility;
+using XrmToolBox.Extensibility.Interfaces;
 
 namespace SolutionComponentComparer
 {
@@ -21,7 +22,7 @@ namespace SolutionComponentComparer
     /// Main tool control. Everything is built in code (no designer files) to keep the project small.
     /// The tool is strictly read-only: it never creates, updates or deletes anything in Dataverse.
     /// </summary>
-    public class SolutionComponentComparerControl : PluginControlBase
+    public class SolutionComponentComparerControl : PluginControlBase, IGitHubPlugin, IHelpPlugin
     {
         private static readonly Color RedBack = Color.FromArgb(248, 215, 218);
         private static readonly Color AmberBack = Color.FromArgb(255, 232, 179);
@@ -77,6 +78,11 @@ namespace SolutionComponentComparer
         private bool _busy;
         private bool _suppressSolutionEvents;
 
+        // IGitHubPlugin / IHelpPlugin: links shown by XrmToolBox in the tool menu.
+        public string RepositoryName { get { return "SolutionComponentComparerTool"; } }
+        public string UserName { get { return "andrii-k-vovk01"; } }
+        public string HelpUrl { get { return "https://github.com/andrii-k-vovk01/SolutionComponentComparerTool/blob/main/docs/user-guide.md"; } }
+
         public SolutionComponentComparerControl()
         {
             BuildUi();
@@ -102,9 +108,8 @@ namespace SolutionComponentComparer
 
         public override void UpdateConnection(IOrganizationService newService, ConnectionDetail detail, string actionName, object parameter)
         {
+            // Keep the picks of the previous connection, then reset everything bound to it.
             SaveSettings();
-            base.UpdateConnection(newService, detail, actionName, parameter);
-
             _names = new ComponentNameResolver();
             _result = null;
             _solutions = new List<SolutionRow>();
@@ -114,11 +119,14 @@ namespace SolutionComponentComparer
             _gridWhereUsed.DataSource = null;
             _lblSummary.Text = "Pick source and target solutions on the left, then click Compare.";
             _lblDupSummary.Text = string.Empty;
-            _lblWhereUsed.Text = "Where used: select a component and click \"Where used\" (or double-click it).";
+            _lblWhereUsed.Text = "Where used: select a component and click \"Where used?\" (or double-click it).";
+
+            // The base class runs the action that requested the connection (e.g. LoadSolutions), if any.
+            base.UpdateConnection(newService, detail, actionName, parameter);
+
             LoadSettings();
             UpdateButtons();
-
-            if (_loaded && newService != null) LoadSolutions();
+            if (_loaded && newService != null && !_busy) LoadSolutions();
         }
 
         public override void ClosingPlugin(PluginCloseInfo info)
@@ -253,36 +261,50 @@ namespace SolutionComponentComparer
             WorkAsync(new WorkAsyncInfo
             {
                 Message = "Loading solution components...",
+                IsCancelable = true,
                 Work = (worker, args) =>
                 {
                     var repository = new DataverseRepository(Service);
-                    Action<string> progress = msg => worker.ReportProgress(0, msg);
 
-                    var memberships = repository.LoadMemberships(refs.Select(r => r.Id).ToList(), progress);
-                    names.EnsureNames(repository, memberships, progress);
-
-                    progress("Comparing " + memberships.Count.ToString("N0") + " solution component rows...");
-                    var result = ComparisonEngine.Compare(refs, memberships, names);
-                    result.EnvironmentName = environment;
-
-                    // Is a "missing" component still held by some other (not selected) solution?
-                    var missing = result.Rows.Where(r => r.Status == ComparisonStatus.MissingInTarget).ToList();
-                    if (missing.Count > 0)
+                    // Progress is reported on every page, which is also where a cancel request is honoured.
+                    Action<string> progress = msg =>
                     {
-                        var others = repository.LoadOtherSolutions(
-                            missing.Select(r => new ComponentKey(r.ComponentType, r.ObjectId)).ToList(),
-                            new HashSet<Guid>(refs.Select(r => r.Id)),
-                            progress);
-                        foreach (var row in missing)
-                        {
-                            List<string> list;
-                            row.OtherSolutions = others.TryGetValue(new ComponentKey(row.ComponentType, row.ObjectId), out list)
-                                ? string.Join(", ", list.OrderBy(x => x, StringComparer.OrdinalIgnoreCase))
-                                : string.Empty;
-                        }
-                    }
+                        if (worker.CancellationPending) throw new OperationCanceledException();
+                        worker.ReportProgress(0, msg);
+                    };
 
-                    args.Result = new object[] { result, names.Warnings.ToList() };
+                    try
+                    {
+                        var memberships = repository.LoadMemberships(refs.Select(r => r.Id).ToList(), progress);
+                        names.EnsureNames(repository, memberships, progress);
+
+                        progress("Comparing " + memberships.Count.ToString("N0") + " solution component rows...");
+                        var result = ComparisonEngine.Compare(refs, memberships, names);
+                        result.EnvironmentName = environment;
+
+                        // Is a "missing" component still held by some other (not selected) solution?
+                        var missing = result.Rows.Where(r => r.Status == ComparisonStatus.MissingInTarget).ToList();
+                        if (missing.Count > 0)
+                        {
+                            var others = repository.LoadOtherSolutions(
+                                missing.Select(r => new ComponentKey(r.ComponentType, r.ObjectId)).ToList(),
+                                new HashSet<Guid>(refs.Select(r => r.Id)),
+                                progress);
+                            foreach (var row in missing)
+                            {
+                                List<string> list;
+                                row.OtherSolutions = others.TryGetValue(new ComponentKey(row.ComponentType, row.ObjectId), out list)
+                                    ? string.Join(", ", list.OrderBy(x => x, StringComparer.OrdinalIgnoreCase))
+                                    : string.Empty;
+                            }
+                        }
+
+                        args.Result = new object[] { result, names.Warnings.ToList() };
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        args.Cancel = true;
+                    }
                 },
                 ProgressChanged = e =>
                 {
@@ -292,6 +314,11 @@ namespace SolutionComponentComparer
                 PostWorkCallBack = args =>
                 {
                     SetBusy(false);
+                    if (args.Cancelled)
+                    {
+                        LogInfo("Comparison cancelled");
+                        return;
+                    }
                     if (args.Error != null)
                     {
                         ShowError("Comparison failed", args.Error);
@@ -626,7 +653,8 @@ namespace SolutionComponentComparer
         private void UpdateButtons()
         {
             bool connected = Service != null;
-            _btnLoad.Enabled = connected && !_busy;
+            // Without a connection, Load solutions opens the XrmToolBox connection dialog.
+            _btnLoad.Enabled = !_busy;
             _btnCompare.Enabled = connected && !_busy && _solutions.Any(s => s.Source);
             _btnExport.Enabled = !_busy && _result != null;
             _btnWhereUsed.Enabled = connected && !_busy && _result != null;
